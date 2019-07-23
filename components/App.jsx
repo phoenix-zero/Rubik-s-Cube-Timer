@@ -8,10 +8,16 @@ export default class App extends Component {
 
   newScramble = () => {
     let newString = '';
+    let last = -1;
     for (let i = 0; i < 10; i += 1) {
       const face = Math.floor(Math.random() * 3);
       const direction = Boolean(Math.floor(Math.random() * 2));
       const spin = Math.floor(Math.random() * 3);
+      if (face * 2 + direction === last) {
+        i -= 1;
+        // eslint-disable-next-line no-continue
+        continue;
+      } else last = face * 2 + direction;
       switch (face) {
         case 0: // RL
           if (direction) newString += '<span style="color: orange;">R';
@@ -45,7 +51,7 @@ export default class App extends Component {
 
   render = () => {
     return (
-      <>
+      <div style={{ backgroundColor: '#000000', height: '100vh' }}>
         <Card
           style={{
             textAlign: 'center',
@@ -56,13 +62,15 @@ export default class App extends Component {
         >
           <h1>Rubik&apos;s Cube timer</h1>
         </Card>
-        <Card style={{ borderColor: '#00000000' }}>
+        <Card
+          style={{ borderColor: '#00000000', backgroundColor: '#00000000' }}
+        >
           <p style={{ fontSize: 15 }}>
             {`Your scramble: `}
             <span dangerouslySetInnerHTML={{ __html: this.state.scramble }} />
           </p>
         </Card>
-      </>
+      </div>
     );
   };
 }
