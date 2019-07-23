@@ -4,8 +4,8 @@
   "description": "A rubiks cube timer",
   "main": "main.js",
   "scripts": {
-    "prebuild": "babel -d build/ . --ignore node_modules,build && cp -r components/*.html ./build/components/",
-    "build": "electron build/main.js",
+    "pretest": "babel -d build/ . --ignore node_modules,build && cp -r components/*.html ./build/components/",
+    "test": "electron build/main.js",
     "clean": "rm -r build"
   },
   "repository": {
@@ -33,14 +33,14 @@
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-prettier": "^3.1.0",
     "eslint-plugin-react": "^7.13.0",
-    "prettier": "^1.18.2",
-    "rollup": "^1.17.0",
-    "rollup-plugin-babel": "^4.3.3"
+    "prettier": "^1.18.2"
   },
   "dependencies": {
     "@babel/runtime": "^7.5.5",
+    "bootstrap": "^4.3.1",
     "electron": "^5.0.7",
     "react": "^16.8.6",
-    "react-dom": "^16.8.6"
+    "react-dom": "^16.8.6",
+    "reactstrap": "^8.0.1"
   }
 }
