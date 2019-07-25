@@ -2,8 +2,49 @@ import React, { Component } from 'react';
 import { Card } from 'reactstrap';
 
 export default class App extends Component {
+  TimerState = {
+    READY: 0,
+    HELD: 1,
+    RELEASABLE: 2,
+    COUNTING: 3,
+    RUNNING: 4,
+  };
+
   componentWillMount = () => {
-    this.setState({ scramble: this.newScramble() });
+    this.setState({
+      scramble: this.newScramble(),
+      timerState: this.TimerState.READY,
+      heldTime: 0,
+      cubeTime: 0,
+    });
+    this.startTime = 0;
+    document.addEventListener('keydown', ({ keyCode }) => {
+      if (keyCode !== 32) return;
+      if (this.state.timerState === this.TimerState.HELD) {
+        if (performance.now() - this.state.heldTime >= 1000) {
+          this.setState({ timerState: this.TimerState.RELEASABLE });
+          return;
+        }
+      }
+      if (this.state.timerState !== this.TimerState.READY) return;
+      this.setState({
+        heldTime: performance.now(),
+        timerState: this.TimerState.HELD,
+      });
+    });
+    document.addEventListener('keyup', ({ keyCode }) => {
+      if (keyCode !== 32) return;
+      console.log(performance.now() - this.state.heldTime);
+      this.setState({ heldTime: 0, timerState: this.TimerState.RUNNING });
+      this.startTime = performance.now();
+      window.setInterval(() => {
+        this.setState({ cubeTime: performance.now() - this.startTime });
+      }, 100);
+    });
+    document.addEventListener('keypress', () => {
+      if (this.state.timerState === this.TimerState.RUNNING)
+        console.log('Done');
+    });
   };
 
   newScramble = () => {
@@ -63,12 +104,21 @@ export default class App extends Component {
           <h1>Rubik&apos;s Cube timer</h1>
         </Card>
         <Card
-          style={{ borderColor: '#00000000', backgroundColor: '#00000000' }}
+          style={{
+            borderColor: '#00000000',
+            backgroundColor: '#00000000',
+            textAlign: 'center',
+          }}
         >
-          <p style={{ fontSize: 15 }}>
+          <p style={{ fontSize: 15, alignContent: 'center' }}>
             {`Your scramble: `}
             <span dangerouslySetInnerHTML={{ __html: this.state.scramble }} />
           </p>
+          <br />
+          <p>
+            {this.state.timerState === this.TimerState.RELEASABLE ? 'GO' : ''}
+          </p>
+          <p> {this.state.cubeTime / 1000}</p>
         </Card>
       </div>
     );
