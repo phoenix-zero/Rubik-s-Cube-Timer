@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Card } from 'reactstrap';
+import { Card, Col } from 'reactstrap';
 
 export default class App extends Component {
   TimerState = {
@@ -10,12 +10,17 @@ export default class App extends Component {
     RUNNING: 4,
   };
 
+  reRoll = () => {
+    this.setState({ scramble: this.newScramble() });
+  };
+
   componentWillMount = () => {
     this.setState({
       scramble: this.newScramble(),
       timerState: this.TimerState.READY,
       heldTime: 0,
-      cubeTime: 0,
+      cubeTime: [0, 0],
+      timerArray: [],
     });
     this.startTime = 0;
     this.counting = null;
@@ -41,13 +46,31 @@ export default class App extends Component {
         this.setState({ heldTime: 0, timerState: this.TimerState.RUNNING });
         this.startTime = performance.now();
         this.counting = setInterval(() => {
-          this.setState({ cubeTime: performance.now() - this.startTime });
-        }, 100);
-      }
+          const timeState =
+            Math.round(performance.now() - this.startTime) / 1000;
+          this.setState({
+            cubeTime: [
+              Math.round(timeState),
+              Math.round((timeState * 100) % 100) < 10
+                ? Math.round((timeState * 100) % 100) * 10
+                : Math.round((timeState * 100) % 100),
+            ],
+          });
+        }, 10);
+      } else if (this.state.timerState === this.TimerState.HELD)
+        this.setState({ timerState: this.TimerState.READY });
     });
-    document.addEventListener('keypress', () => {
-      if (this.state.timerState === this.TimerState.RUNNING)
+    document.addEventListener('keypress', ({ keyCode }) => {
+      if (this.state.timerState === this.TimerState.RUNNING && keyCode === 32) {
         clearInterval(this.counting);
+        this.setState({ timerState: this.TimerState.READY });
+        this.reRoll();
+      } else if (
+        this.state.timerState === this.TimerState.READY &&
+        keyCode === 114
+      ) {
+        this.reRoll();
+      }
     });
   };
 
@@ -96,35 +119,43 @@ export default class App extends Component {
 
   render = () => {
     return (
-      <div style={{ backgroundColor: '#000000', height: '100vh' }}>
-        <Card
-          style={{
-            textAlign: 'center',
-            borderColor: '#00000000',
-            background: '#020923ff',
-            color: '#bf7474ff',
-          }}
-        >
-          <h1>Rubik&apos;s Cube timer</h1>
-        </Card>
-        <Card
-          style={{
-            borderColor: '#00000000',
-            backgroundColor: '#00000000',
-            textAlign: 'center',
-          }}
-        >
-          <p style={{ fontSize: 15, alignContent: 'center' }}>
-            {`Your scramble: `}
-            <span dangerouslySetInnerHTML={{ __html: this.state.scramble }} />
+      <Card
+        style={{
+          borderColor: '#00000000',
+          backgroundColor: '#00000000',
+          textAlign: 'center',
+        }}
+      >
+        <Col>
+          <p
+            style={{
+              fontSize: 15,
+              alignContent: 'center',
+            }}
+          >
+            Your scramble: <br />
+            <span
+              style={{
+                backgroundColor: '#000000',
+                color: '#ffffff',
+              }}
+              dangerouslySetInnerHTML={{ __html: this.state.scramble }}
+            />
           </p>
-          <br />
-          <p>
-            {this.state.timerState === this.TimerState.RELEASABLE ? 'GO' : ''}
+          <p onClick={this.reRoll} type="button" className="btn btn-primary">
+            <u>R</u>e-roll
           </p>
-          <p> {this.state.cubeTime / 1000}</p>
-        </Card>
-      </div>
+        </Col>
+        <br />
+        <p style={{ fontSize: 40 }}>
+          {this.state.cubeTime[0] < 10 ? '0' : ''}
+          {this.state.cubeTime[0]}.
+          {this.state.cubeTime[1] === 0 ? '00' : this.state.cubeTime[1]}
+        </p>
+        <p style={{ fontSize: 50 }}>
+          {this.state.timerState === this.TimerState.RELEASABLE ? 'GO' : ''}
+        </p>
+      </Card>
     );
   };
 }

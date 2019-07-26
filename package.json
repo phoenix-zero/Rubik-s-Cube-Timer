@@ -6,7 +6,8 @@
   "scripts": {
     "pretest": "babel -d build/ . --ignore node_modules,build && cp -r components/*.html ./build/components/",
     "test": "electron build/main.js",
-    "clean": "rm -r build"
+    "clean": "rm -r build",
+    "lint": "eslint components . --ext .js,.jsx "
   },
   "repository": {
     "type": "git",
