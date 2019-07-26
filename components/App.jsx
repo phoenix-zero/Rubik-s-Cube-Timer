@@ -18,6 +18,7 @@ export default class App extends Component {
       cubeTime: 0,
     });
     this.startTime = 0;
+    this.counting = null;
     document.addEventListener('keydown', ({ keyCode }) => {
       if (keyCode !== 32) return;
       if (this.state.timerState === this.TimerState.HELD) {
@@ -27,6 +28,7 @@ export default class App extends Component {
         }
       }
       if (this.state.timerState !== this.TimerState.READY) return;
+      console.log('Setting timer');
       this.setState({
         heldTime: performance.now(),
         timerState: this.TimerState.HELD,
@@ -34,16 +36,18 @@ export default class App extends Component {
     });
     document.addEventListener('keyup', ({ keyCode }) => {
       if (keyCode !== 32) return;
-      console.log(performance.now() - this.state.heldTime);
-      this.setState({ heldTime: 0, timerState: this.TimerState.RUNNING });
-      this.startTime = performance.now();
-      window.setInterval(() => {
-        this.setState({ cubeTime: performance.now() - this.startTime });
-      }, 100);
+      if (this.state.timerState === this.TimerState.RELEASABLE) {
+        console.log(performance.now() - this.state.heldTime);
+        this.setState({ heldTime: 0, timerState: this.TimerState.RUNNING });
+        this.startTime = performance.now();
+        this.counting = setInterval(() => {
+          this.setState({ cubeTime: performance.now() - this.startTime });
+        }, 100);
+      }
     });
     document.addEventListener('keypress', () => {
       if (this.state.timerState === this.TimerState.RUNNING)
-        console.log('Done');
+        clearInterval(this.counting);
     });
   };
 
