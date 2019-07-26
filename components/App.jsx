@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
-import { Card, Col } from 'reactstrap';
+import { Card, Col, Row } from 'reactstrap';
+import TimeTable from './timeTable';
+import Results from './results';
 
 export default class App extends Component {
   TimerState = {
@@ -11,12 +13,12 @@ export default class App extends Component {
   };
 
   reRoll = () => {
-    this.setState({ scramble: this.newScramble() });
+    this.setState({ ...this.newScramble() });
   };
 
   componentWillMount = () => {
     this.setState({
-      scramble: this.newScramble(),
+      ...this.newScramble(),
       timerState: this.TimerState.READY,
       heldTime: 0,
       cubeTime: [0, 0],
@@ -42,7 +44,6 @@ export default class App extends Component {
     document.addEventListener('keyup', ({ keyCode }) => {
       if (keyCode !== 32) return;
       if (this.state.timerState === this.TimerState.RELEASABLE) {
-        console.log(performance.now() - this.state.heldTime);
         this.setState({ heldTime: 0, timerState: this.TimerState.RUNNING });
         this.startTime = performance.now();
         this.counting = setInterval(() => {
@@ -64,6 +65,11 @@ export default class App extends Component {
       if (this.state.timerState === this.TimerState.RUNNING && keyCode === 32) {
         clearInterval(this.counting);
         this.setState({ timerState: this.TimerState.READY });
+        const timerArray = this.state.timerArray.concat({
+          scramble: this.state.plainScramble,
+          time: `${this.state.cubeTime[0]}.${this.state.cubeTime[1]}`,
+        });
+        this.setState({ timerArray });
         this.reRoll();
       } else if (
         this.state.timerState === this.TimerState.READY &&
@@ -75,7 +81,8 @@ export default class App extends Component {
   };
 
   newScramble = () => {
-    let newString = '';
+    let scramble = '';
+    let plainScramble = '';
     let last = -1;
     for (let i = 0; i < 10; i += 1) {
       const face = Math.floor(Math.random() * 3);
@@ -88,33 +95,52 @@ export default class App extends Component {
       } else last = face * 2 + direction;
       switch (face) {
         case 0: // RL
-          if (direction) newString += '<span style="color: orange;">R';
-          else newString += '<span style="color: red;">L';
+          if (direction) {
+            scramble += '<span style="color: orange;">R';
+            plainScramble += 'R';
+          } else {
+            scramble += '<span style="color: red;">L';
+            plainScramble += 'L';
+          }
           break;
         case 1: // UD
-          if (direction) newString += '<span style="color: yellow;">U';
-          else newString += '<span style="color: white;">D';
+          if (direction) {
+            scramble += '<span style="color: yellow;">U';
+            plainScramble += 'U';
+          } else {
+            scramble += '<span style="color: white;">D';
+            plainScramble += 'D';
+          }
           break;
         case 2: // FB
-          if (direction) newString += '<span style="color: green;">F';
-          else newString += '<span style="color: blue;">B';
+          if (direction) {
+            scramble += '<span style="color: green;">F';
+            plainScramble += 'F';
+          } else {
+            scramble += '<span style="color: blue;">B';
+            plainScramble += 'B';
+          }
           break;
         default: // Call the FBI
       }
       switch (spin) {
         case 0: // Regular
-          newString += '</span> ';
+          scramble += '</span> ';
+          plainScramble += ' ';
           break;
         case 1: // Reverse
-          newString += '&apos;</span>  ';
+          scramble += '&apos;</span>  ';
+          plainScramble += "' ";
           break;
         case 2: // Double
-          newString += '2</span> ';
+          scramble += '2</span> ';
+          plainScramble += '2 ';
           break;
         default: // WOW
       }
     }
-    return newString;
+    this.setState({ plainScramble });
+    return { scramble, plainScramble };
   };
 
   render = () => {
@@ -152,9 +178,25 @@ export default class App extends Component {
           {this.state.cubeTime[0]}.
           {this.state.cubeTime[1] === 0 ? '00' : this.state.cubeTime[1]}
         </p>
-        <p style={{ fontSize: 50 }}>
-          {this.state.timerState === this.TimerState.RELEASABLE ? 'GO' : ''}
+        <p
+          style={{
+            fontSize: 50,
+            visibility:
+              this.state.timerState === this.TimerState.RELEASABLE
+                ? 'visible'
+                : 'hidden',
+          }}
+        >
+          GO
         </p>
+        <Row style={{ maxHeight: '20vh', maxWidth: '100%' }}>
+          <Col sm="6" style={{ maxHeight: '30vh', overflowY: 'auto' }}>
+            <TimeTable table={this.state.timerArray} />
+          </Col>
+          <Col sm="6">
+            <Results table={this.state.timerArray} />
+          </Col>
+        </Row>
       </Card>
     );
   };
