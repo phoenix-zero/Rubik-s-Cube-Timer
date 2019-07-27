@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Card, Col, Row } from 'reactstrap';
+import { ipcRenderer } from 'electron';
 import TimeTable from './timeTable';
 import Results from './results';
 
@@ -15,6 +16,13 @@ export default class App extends Component {
   reRoll = () => {
     this.setState({ ...this.newScramble() });
   };
+
+  constructor(props) {
+    super(props);
+    ipcRenderer.on('SAVE_REQUESTED', () => {
+      ipcRenderer.send('SAVE_DATA', { msg: 'Hello' });
+    });
+  }
 
   componentWillMount = () => {
     this.setState({
