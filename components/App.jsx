@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Card, Col, Row } from 'reactstrap';
-import { ipcRenderer } from 'electron';
+import { ipcRenderer, remote } from 'electron';
 import TimeTable from './timeTable';
 import Results from './results';
 
@@ -19,8 +19,21 @@ export default class App extends Component {
 
   constructor(props) {
     super(props);
+    {
+      const fs = remote.getGlobal('fs');
+      if (fs) this.fs = fs;
+      const logger = remote.getGlobal('logger');
+      if (logger) this.logger = logger;
+    }
     ipcRenderer.on('SAVE_REQUESTED', () => {
-      ipcRenderer.send('SAVE_DATA', { msg: 'Hello' });
+      this.fs.writeFile(
+        '/home/phoenix/.timer.json',
+        JSON.stringify(JSON.stringify(this.state.timerArray)),
+        err => {
+          if (err) this.logger(err);
+          else this.logger('Success');
+        },
+      );
     });
   }
 
@@ -31,6 +44,16 @@ export default class App extends Component {
       heldTime: 0,
       cubeTime: [0, 0],
       timerArray: [],
+    });
+    this.fs.readFile('/home/phoenix/.timer.json', (err, data) => {
+      if (err) console.log(err);
+      else {
+        let { timerArray } = this.state;
+        timerArray = timerArray.concat(JSON.parse(JSON.parse(data.toString())));
+        // this.logger(JSON.parse(data.toString()));
+        this.logger(timerArray);
+        this.setState({ timerArray });
+      }
     });
     this.startTime = 0;
     this.counting = null;

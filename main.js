@@ -1,5 +1,8 @@
-import { app, BrowserWindow, Menu, ipcMain } from 'electron';
-// import fs from 'fs';
+import { app, BrowserWindow, Menu } from 'electron';
+import fs from 'fs';
+
+global.fs = fs;
+global.logger = console.log;
 
 let mainWindow;
 const isMac = false;
@@ -48,10 +51,6 @@ const createWindow = () => {
 
   mainWindow.on('closed', () => {
     mainWindow = null;
-  });
-
-  ipcMain.on('SAVE_DATA', (event, data) => {
-    console.log(data.msg);
   });
 };
 
