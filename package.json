@@ -39,7 +39,7 @@
   "dependencies": {
     "@babel/runtime": "^7.5.5",
     "bootstrap": "^4.3.1",
-    "electron": "^5.0.7",
+    "electron": "^18.3.7",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "reactstrap": "^8.0.1"
